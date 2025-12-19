@@ -36,6 +36,9 @@ serve(async (req) => {
 
     console.log("Scraping URL:", formattedUrl);
 
+    // Check if it's a PDF - PDFs need more time to process
+    const isPdf = formattedUrl.toLowerCase().endsWith('.pdf');
+    
     const response = await fetch("https://api.firecrawl.dev/v1/scrape", {
       method: "POST",
       headers: {
@@ -45,7 +48,9 @@ serve(async (req) => {
       body: JSON.stringify({
         url: formattedUrl,
         formats: ["markdown"],
-        onlyMainContent: true,
+        onlyMainContent: !isPdf, // For PDFs, get full content
+        waitFor: isPdf ? 30000 : 5000, // Wait longer for PDFs (30s vs 5s)
+        timeout: 60000, // 60 second timeout
       }),
     });
 
